@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--实现的刀接口-->
+<mapper namespace="com.youfuzhang.mapper.DictionaryValueMapper">
+    <resultMap id="dictionaryValue" type="com.youfuzhang.beans.DictionaryValue">
+        <id property="id" column="vId"/>
+        <result property="value" column="value"/>
+        <result property="text" column="text"/>
+        <result property="orderNo" column="orderNo"/>
+        <result property="typeid" column="typeid"/>
+        <association property="dicyionaryType" javaType="com.youfuzhang.beans.DicyionaryType">
+            <result property="id" column="tId"/>
+            <result property="name" column="tName"/>
+            <result property="description" column="description"/>
+            <result property="creatTime" column="creatTime"/>
+        </association>
+    </resultMap>
+
+    <select id="getAll" resultMap="dictionaryValue">
+select
+    v.id as vId,
+    v.value as value ,
+       v.text  as text,
+       v.orderNo as orderNo,
+       v.typeid as typeid,
+       t.id as tId,
+       t.name as tName,
+       t.description as description,
+    t.creatTime as tCreatTime
+from tbl_dictionary_value v,tbl_dictionary_type t
+where v.typeid = t.id
+order by tName,orderNo desc
+    </select>
+
+    <select id="getId" resultMap="dictionaryValue">
+    select
+       v.id as vId,
+    v.value as value ,
+       v.text  as text,
+       v.orderNo as orderNo,
+       v.typeid as typeid,
+       t.id as tId,
+       t.name as tName,
+       t.description as description,
+    t.creatTime as tCreatTime
+        from tbl_dictionary_value v, tbl_dictionary_type t
+        where
+            v.typeid =t.id
+          and
+            v.id=#{id}
+        order by tName, orderNo desc
+    </select>
+
+    <delete id="delAll" >
+        delete from tbl_dictionary_value where id in
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="add">
+        insert into tbl_dictionary_value
+        (id, value, text, orderNo, typeid)
+        values
+        (#{id},#{value},#{text},#{orderNo},#{typeid})
+    </insert>
+
+    <update id="edit">
+        update tbl_dictionary_value set value =#{value} ,
+        text =#{text},
+        orderNo =#{orderNo},
+        typeid =#{typeid}
+        where
+        id=#{id}
+    </update>
+</mapper>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<link href="../../../jquery/bootstrap_3.3.0/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+<link href="../../../jquery/bootstrap-datetimepicker-master/css/bootstrap-datetimepicker.min.css" type="text/css" rel="stylesheet" />
+
+<script type="text/javascript" src="../../../jquery/jquery-1.11.1-min.js"></script>
+<script type="text/javascript" src="../../../jquery/bootstrap_3.3.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+	<div style="position:  relative; left: 30px;">
+		<h3>修改字典类型</h3>
+	  	<div style="position: relative; top: -40px; left: 70%;">
+			<button type="button" id="btnEdit" class="btn btn-primary">更新</button>
+			<button type="button" class="btn btn-default" onclick="window.history.back();">取消</button>
+		</div>
+		<hr style="position: relative; top: -40px;">
+	</div>
+	<form class="form-horizontal" role="form">
+					
+		<div class="form-group">
+			<label for="create-code" class="col-sm-2 control-label">编码<span style="font-size: 15px; color: red;">*</span></label>
+			<div class="col-sm-10" style="width: 300px;">
+				<input type="text" class="form-control" id="code" style="width: 200%;" placeholder="编码作为主键，不能是中文" value="sex" readonly>
+			</div>
+		</div>
+		
+		<div class="form-group">
+			<label for="create-name" class="col-sm-2 control-label">名称</label>
+			<div class="col-sm-10" style="width: 300px;">
+				<input type="text" class="form-control" id="name" style="width: 200%;" value="性别">
+			</div>
+		</div>
+		
+		<div class="form-group">
+			<label for="create-describe" class="col-sm-2 control-label">描述</label>
+			<div class="col-sm-10" style="width: 300px;">
+				<textarea class="form-control" rows="3" id="describe" style="width: 200%;">描述信息</textarea>
+			</div>
+		</div>
+	</form>
+	
+	<div style="height: 200px;"></div>
+</body>
+</html>
+
+<script>
+	$(function () {
+		function getUrlParam(name) {
+			//构造一个含有目标参数的正则表达式对象
+			var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+			//匹配目标参数
+			var r = window.location.search.substr(1).match(reg);
+			if (r != null) {
+				return unescape(r[2]);
+			} else {
+				//返回参数值
+				return "";
+			}
+		}
+		var urlParam = getUrlParam('id');
+
+			$.ajax({
+						type:"GET",
+						url:"/DicyionaryTypeController/editBefore.action",
+				        data:{
+							id:urlParam
+						},
+						success:function (data) {
+							//这里是请求成功进行回调处理
+							$("#code").val(data.DicyionaryType.id);
+							$("#name").val(data.DicyionaryType.name);
+							$("#describe").val(data.DicyionaryType.description);
+
+						},
+						error:function (xhr) {
+							//xhr为XMLHttpRequest对象
+							//这里是请求失败进行回调处理
+							alert("失败了")
+						}
+					});
+
+		$("#btnEdit").click(function () {
+			$.ajax({
+				type:"post",
+				url:"/DicyionaryTypeController/edit.action",
+				data:{
+					id:$("#code").val(),
+					name:$("#name").val(),
+					description:$("#describe").val()
+				},
+				success:function (data) {
+					//这里是请求成功进行回调处理
+					if (data.error==0){
+						window.location.href ="index.html";
+					}else{
+						alert(data.mess)
+					}
+
+				},
+				error:function (xhr) {
+					//xhr为XMLHttpRequest对象
+					//这里是请求失败进行回调处理
+					if(xhr.status==500){
+						window.alert("服务内部错误，赶快通知后端人员");
+					}}
+			});
+		})
+	});
+</script>

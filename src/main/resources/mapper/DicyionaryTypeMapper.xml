@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        <!--实现的刀接口-->
+<mapper namespace="com.youfuzhang.mapper.DicyionaryTypeMapper">
+
+<select id="getAll" resultType="com.youfuzhang.beans.DicyionaryType">
+    select * from tbl_dictionary_type order by creatTime desc
+</select>
+
+    <select id="getId" resultType="com.youfuzhang.beans.DicyionaryType">
+    select * from tbl_dictionary_type where id =#{id}
+</select>
+
+    <insert id="add">
+insert into tbl_dictionary_type (id, `name`, description,creatTime)
+VALUES
+(#{id},#{name},#{description},#{creatTime})
+    </insert>
+
+    <update id="edit">
+update tbl_dictionary_type set name = #{name},description=#{description}  where id= #{id}
+    </update>
+
+    <delete id="del">
+delete from tbl_dictionary_type where id = #{id}
+    </delete>
+
+    <!--mybatis动态SQL-->
+    <delete id="delAll">
+delete from tbl_dictionary_type where id in
+<foreach collection="array" item="id" open="(" close=")" separator=",">
+#{id}
+</foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<link href="../../../jquery/bootstrap_3.3.0/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+
+	<script type="text/javascript" src="../../../jquery/jquery-1.11.1-min.js"></script>
+	<script type="text/javascript" src="../../../jquery/bootstrap_3.3.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div>
+	<div style="position: relative; left: 30px; top: -10px;">
+		<div class="page-header">
+			<h3>字典值列表</h3>
+		</div>
+	</div>
+</div>
+<div class="btn-toolbar" role="toolbar" style="background-color: #F7F7F7; height: 50px; position: relative;left: 30px;">
+	<div class="btn-group" style="position: relative; top: 18%;">
+		<button type="button" class="btn btn-primary" onclick="window.location.href='save.html'"><span class="glyphicon glyphicon-plus"></span> 创建</button>
+		<button type="button" id="btnEdit" class="btn btn-default" ><span class="glyphicon glyphicon-edit"></span> 编辑</button>
+		<button type="button" id="btnDel" class="btn btn-danger"><span class="glyphicon glyphicon-minus"></span> 删除</button>
+	</div>
+</div>
+<div style="position: relative; left: 30px; top: 20px;">
+	<table class="table table-hover">
+		<thead>
+		<tr style="color: #B3B3B3;">
+			<td><input id="selectAll" type="checkbox" /></td>
+			<td>序号</td>
+			<td>字典值</td>
+			<td>文本</td>
+			<td>排序号</td>
+			<td>字典类型编码</td>
+			<td>字典类型名称</td>
+			<td>字典类型描述</td>
+		</tr>
+		</thead>
+		<tbody id="t1">
+
+		</tbody>
+	</table>
+</div>
+
+</body>
+
+</html>
+<script>
+	function load() {
+		$.ajax({
+			type:"GET",
+			url:"/DictionaryValueController/getAll.action",
+			success:function (data) {
+				var html = "";
+				//这里是请求成功进行回调处理
+				$(data.data).each(function (index) {
+
+					html+="\t\t\t<tr >\n" +
+							"\t\t\t\t<td><input type=\"checkbox\" name='id' value='" + this.id + "'/></td>\n" +
+							"\t\t\t\t<td>"+(index+1)+"</td>\n" +
+							"\t\t\t\t<td>"+this.value+"</td>\n" +
+							"\t\t\t\t<td>"+this.text+"</td>\n" +
+							"\t\t\t\t<td>"+this.orderNo+"</td>\n" +
+							"\t\t\t\t<td>"+this.typeid+"</td>\n" +
+							"\t\t\t\t<td>"+this.dicyionaryType.name+"</td>\n" +
+							"\t\t\t\t<td>"+this.dicyionaryType.description+"</td>\n" +
+							"\t\t\t</tr>";
+				});
+				$("#t1").html(html);
+			},
+			error:function (xhr) {
+				//xhr为XMLHttpRequest对象
+				//这里是请求失败进行回调处理
+			}
+		})
+	}
+
+	$(function () {
+		load();
+
+		//全选checked
+				$("#selectAll").click(function () {
+					$(":checkbox[name=id]").prop("checked", this.checked);
+				});
+				//是否显示删除提示
+				$("#btnDel").click(function () {
+					var $cks = $(":checkbox[name=id]:checked");
+					if ($cks.size() == 0) {
+						alert("必须至少选择一项");
+						return false;
+					}
+					$('#delModel').modal('show');
+				});
+				//删除
+				$("#btnDelAction").click(function () {
+
+					//获取所有的选择的checkbox
+					var $cks = $(":checkbox[name=id]:checked");
+					//使用map遍历，拿出每个checkbox里面的value
+					// 然后利用get()返回
+					// 然后利用join()进行连接
+					//最后如果3个选择，分别ID是2 6 7则最后的结果是一个字符串：2,6,7,
+					var id = $cks.map(function () {
+						return this.value;
+					}).get().join(",");
+
+					console.log($cks);
+
+					$.ajax({
+						type:"post",
+						url:"/DictionaryValueController/delAll.action",
+						data:{
+							id:id
+						},
+						success:function (data) {
+							//这里是请求成功进行回调处理
+							if (data.error !=0){
+								alert(data.mess);
+							}
+							//模态框消失
+							$('#delModel').modal('hide');
+							load();
+						},
+						error:function (xhr) {
+							//xhr为XMLHttpRequest对象
+							//这里是请求失败进行回调处理
+							if (xhr.status == 500) {
+								window.alert("服务内部错误，赶快通知后端人员");
+							}
+						}
+					});
+				});
+
+		//修改
+		$("#btnEdit").click(function () {
+			var $cks = $(":checkbox[name=id]:checked");
+			if ($cks.size() != 1) {
+				alert("必须且只能选择一项！");
+				//e.stopPropagation(); // 阻止事件冒泡传播
+				//e.preventDefault(); // 阻止事件在元素上的默认行为
+				return false; // 阻止事件冒泡传播和元素的默认动作
+			}
+			window.location.href='edit.html?id=' +$cks.val();
+		})
+	})
+</script>
+
+<!-- Large modal -->
+<div id="delModel" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="gridSystemModalLabel">操作确认</h4>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<p>是否删除数据？</p>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				<button id="btnDelAction" type="button" class="btn btn-primary">删除</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
